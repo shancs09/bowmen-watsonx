@@ -1,0 +1,2 @@
+pymilvus[model]
+ibm_watsonx_ai
