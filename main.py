@@ -5,7 +5,7 @@ from fastapi import FastAPI, File, UploadFile, Form,Query
 from typing import  List, Dict, Any
 from pydantic import BaseModel
 from src.milvus_utils import client,create_schema_collection, data_ingestion, hybrid_search, extract_passages,drop_collection
-from src.watsonx_utils import inference_llm
+from src.watsonx_utils import inference_llm,wx_embeddings
 
 import uuid
 
@@ -202,4 +202,5 @@ async def drop_all_collections():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8080))  # <-- use env PORT if available
+    uvicorn.run(app, host="0.0.0.0", port=port)
