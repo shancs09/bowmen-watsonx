@@ -2,9 +2,9 @@
 from dotenv import load_dotenv
 import re,os,json
 from ibm_watsonx_ai import Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-from ibm_watsonx_ai.foundation_models.utils.enums import ModelTypes, DecodingMethods
+from ibm_watsonx_ai.foundation_models import ModelInference,Embeddings
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams,EmbedTextParamsMetaNames as EmbedParams
+from ibm_watsonx_ai.foundation_models.utils.enums import ModelTypes, DecodingMethods,EmbeddingTypes
 
 
 # Load environment variables from .env file (if using dotenv for environment variables)
@@ -14,6 +14,7 @@ wx_api_key = os.getenv('wx_api_key')
 wx_service_url = os.getenv('wx_service_url')
 wx_project_id = os.getenv('wx_project_id')
 wx_llm_model_id = os.getenv('wx_llm_model_id', 'mistralai/mixtral-8x7b-instruct-v01')  # Default value in case ENV is missing
+wx_embedding_model=os.getenv('wx_embedding_model','ibm/slate-125m-english-rtrvr')
 
 # To display example params enter # print(GenParams().get_example_values())
 generate_params = {
@@ -29,6 +30,20 @@ model_inference = ModelInference(
         url = wx_service_url),
         project_id=wx_project_id
     )
+
+
+# Embedding Params:
+embed_params = {
+    EmbedParams.TRUNCATE_INPUT_TOKENS: 512,
+    EmbedParams.RETURN_OPTIONS: {"input_text": False}
+}
+
+wx_embeddings = Embeddings(
+    model_id=wx_embedding_model,
+    params=embed_params,
+    credentials=Credentials(api_key=wx_api_key, url=wx_service_url),
+    project_id=wx_project_id
+)
 
 def inference_llm(context_passages,question):
     # Define the input prompt

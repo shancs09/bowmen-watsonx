@@ -1,23 +1,27 @@
-import os
+import os,numpy as np
 from pymilvus import MilvusClient, DataType, Function, FunctionType
 from pymilvus import AnnSearchRequest, RRFRanker
-from sentence_transformers import SentenceTransformer
+from src.watsonx_utils import wx_embeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import fitz  # PyMuPDF for PDF processing
-# from contextlib import contextmanager
+import fitz
 
 # Load environment variables
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
-MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
+MILVUS_HOST = os.getenv("MILVUS_HOST")
+MILVUS_PORT = os.getenv("MILVUS_PORT")
+MILVUS_USERNAME = os.getenv('MILVUS_USERNAME')
+MILVUS_PASSWORD = os.getenv('MILVUS_PASSWORD')
 # COLLECTION_NAME = os.getenv("COLLECTION_NAME", "demo")
 
-# Initialize embedding model
-embedding_model = SentenceTransformer(EMBEDDING_MODEL)
+# # Initialize embedding model
+# embedding_model = SentenceTransformer(EMBEDDING_MODEL)
 
 # Initialize Milvus client
-client = MilvusClient(uri=f"http://{MILVUS_HOST}:{MILVUS_PORT}")
-
+token = f"{MILVUS_USERNAME}:{MILVUS_PASSWORD}"
+client = MilvusClient(
+    uri=f"http://{MILVUS_HOST}:{MILVUS_PORT}",
+    token=token
+)
 def create_schema_collection(collection_name):
     if collection_name in client.list_collections():
         print(f"Collection '{collection_name}' already exists.")
@@ -78,7 +82,12 @@ def data_ingestion(pdf_content: bytes,collection_name: str,filename: str):
 
     for i in range(0, len(chunks), BATCH_SIZE):
         batch_chunks = chunks[i:i+BATCH_SIZE]
-        batch_embeddings = embedding_model.encode(batch_chunks, convert_to_numpy=True).tolist()
+        # batch_embeddings = embedding_model.encode(batch_chunks, convert_to_numpy=True).tolist()
+        # 1. Generate embeddings using Watsonx
+        batch_embeddings = wx_embeddings.embed_documents(batch_chunks)
+
+        # 2. Convert to numpy and then tolist() if needed for Milvus
+        batch_embeddings = np.array(batch_embeddings).tolist()
         
         client.insert(collection_name, [
             {'filename': filename, 'text': chunk, 'dense': vec} for chunk, vec in zip(batch_chunks, batch_embeddings)
@@ -88,7 +97,8 @@ def data_ingestion(pdf_content: bytes,collection_name: str,filename: str):
     return None
 
 def hybrid_search(query: str, collection_name: str):
-    query_dense_vector = embedding_model.encode([query], convert_to_numpy=True).tolist()
+    # query_dense_vector = embedding_model.encode([query], convert_to_numpy=True).tolist()
+    query_dense_vector = [wx_embeddings.embed_query(query)]
 
     request_1 = AnnSearchRequest(
         data=query_dense_vector,
