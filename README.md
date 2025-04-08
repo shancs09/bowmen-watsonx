@@ -1,4 +1,4 @@
-# Hybrid Search RAG with FastAPI, Milvus, and WatsonX
+# 🚀 Hybrid RAG API with FastAPI, Milvus & WatsonX
 
 This project implements a **Hybrid Search RAG (Retrieval-Augmented Generation)** solution using **FastAPI**, **Milvus**, and **WatsonX**. It supports **BM25 and dense vector search**, integrates with **WatsonX for LLM processing**, and dynamically manages **Milvus collections per user session**.
 
@@ -38,11 +38,39 @@ The API documentation will be available at:
 
 ---
 
+## 🐳 Run with Docker
+
+### **1️⃣ Build the Docker Image**
+```bash
+docker build -t bw_soc_wx_hybrid_search .
+```
+
+### **2️⃣ Run the Container**
+```bash
+docker run -d -p 8000:8000 bw_soc_wx_hybrid_search
+```
+
+Access the app at: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## ☁️ Deployment (IBM Cloud Code Engine)
+
+The FastAPI app can be containerized and deployed to IBM Cloud Code Engine:
+
+- ✅ Push the image to IBM Cloud Container Registry (`uk.icr.io/...`)
+- ✅ Deploy as a Code Engine app using the container image
+- ✅ Ensure Milvus (running on IBM Cloud VM) is publicly reachable
+
+Live Endpoint: [https://bw-wx-hybrid-search.1tyxjp422ztp.eu-gb.codeengine.appdomain.cloud/docs](https://bw-wx-hybrid-search.1tyxjp422ztp.eu-gb.codeengine.appdomain.cloud/docs)
+
+---
+
 ## 🛠 Features
 - **Hybrid Search RAG**: Combines BM25 (Lexical Search) with Dense Embeddings (Vector Search)
 - **Dynamic Milvus Collection Management**: Creates and drops collections per session
 - **FastAPI Integration**: Exposes endpoints for file uploads and hybrid search
-- **WatsonX LLM Support**: Generates enriched responses
+- **WatsonX LLM Support**: Uses IBM WatsonX LLMs to generate enriched responses
 
 ---
 
@@ -94,10 +122,17 @@ The API documentation will be available at:
 
 ---
 
+## 🔍 Quick Example
+```bash
+curl -X POST http://localhost:8000/hybrid_search/ \
+  -H "Content-Type: application/json" \
+  -d '{"description_input": "What is zero trust architecture?"}'
+```
+
+---
+
 ## 🛠 Future Improvements
 - 🔹 **Integrate additional embedding models**
 - 🔹 **Optimize text chunking strategies**
 - 🔹 **Implement authentication & user session tracking**
-
----
 
