@@ -12,27 +12,47 @@ import uuid
 # Initialize FastAPI app
 app = FastAPI()
 
-#Upload request schema
-class Field(BaseModel):
-    name: str
-    value: str
-
-class Row(BaseModel):
-    fields: List[Field]
-
-class DescriptionInput(BaseModel):
-    rows: List[Row]
-
-#Upload response schema
-
-class ResponseItem(BaseModel):
+#New Schema Update:
+# 🔹 Upload Request Schema
+class ControlItem(BaseModel):
+    test_control: str
+    test_plan: str
     description: str
-    relevant_passages: List[Dict[str, Any]]
-    llm_answer: Dict[str, Any]
+    resource_id: str
 
+class ControlInput(BaseModel):
+    controls_data: List[ControlItem]
+
+# 🔹 Relevant Passages
+class Passage(BaseModel):
+    text: str
+    filename: str
+    distance: float
+
+# 🔹 LLM Answer structure
+class LLMAnswer(BaseModel):
+    Compliance_Status: str
+    llm_final_answer: str
+    explanation: str
+    source: str
+    gap_analysis: str
+    confidence_score: float
+
+
+# 🔹 Response Item per control
+class ResponseItem(BaseModel):
+    test_control: str
+    test_plan: str
+    description: str
+    resource_id: str
+    relevant_passages: List[Passage]
+    llm_answer: LLMAnswer
+
+# 🔹 Final Upload Response
 class UploadResponse(BaseModel):
     collection_name: str
-    response: List[ResponseItem]
+    controls_data: List[ResponseItem]
+
 
 def format_context(extracted_passages):
     formatted_text = ""
@@ -82,52 +102,46 @@ async def upload_files(
     try:
         description_dict = json.loads(description_input)
         # descriptions = description_dict.get("descriptions", [])
-        description_parsed = DescriptionInput.parse_obj(description_dict)
+        control_input = ControlInput.parse_obj(description_dict)
     except Exception as e:
         return {"error": "Invalid JSON provided in description_input", "detail": str(e)}
     print("DECRIPTION EXTRACTED:")
-    descriptions = [
-        field.value 
-        for row in description_parsed.rows 
-        for field in row.fields 
-        if field.name == "Description"
-    ]
-    print(descriptions)
-    # response = []
     response_data=[]
-    for desc in descriptions:
+    for control in control_input.controls_data:
+        desc = control.description
         search_results = hybrid_search(desc,collection_name)
         extracted_passages = extract_passages(search_results) 
         llm_context =format_context(extracted_passages)
         # Invoke Watsonx for LLM response using description & relevant passages
         watsonx_response = inference_llm(llm_context, desc)
-        # Append results along with LLM answer
-        # response.append({
-        #     "description": desc,
-        #     "relevant_passages": extracted_passages,  # Keeping original for reference
-        #     "llm_answer": watsonx_response  # Adding the Watsonx response here
-        # })
-        response_data.append(ResponseItem(
+        print(watsonx_response)
+        # Build the structured response
+        response_item = ResponseItem(
+            test_control=control.test_control,
+            test_plan=control.test_plan,
+            resource_id=control.resource_id,
             description=desc,
-            relevant_passages=extracted_passages,
-            llm_answer=watsonx_response
-        ))
-        # response.append({"description": desc, "relevant_passages": extract_passages(search_results)})
+            relevant_passages=[Passage(**p) for p in extracted_passages],
+            llm_answer=LLMAnswer(**watsonx_response)
+        )
+        response_data.append(response_item)
 
     if auto_drop_collection_after_search:
         drop_collection(collection_name)
-    # return {"collection_name":collection_name,"response": response}
-    return  UploadResponse(collection_name=collection_name, response=response_data)
+    return UploadResponse(collection_name=collection_name,controls_data=response_data)
 
 @app.post("/llm_watsonx_answer/", response_model=UploadResponse)
 async def llm_watsonx_answer(hybrid_search_response: dict):
 
     collection_name = hybrid_search_response.get("collection_name")
-    responses = hybrid_search_response.get("response", [])
+    responses = hybrid_search_response.get("controls_data", [])
     
     llm_response = []
     for resp in responses:
         description = resp.get("description", "")
+        test_control = resp.get("test_control", "")
+        test_plan = resp.get("test_plan", "")
+        resource_id = resp.get("resource_id", None)  # Optional, only if used
         extracted_passages = resp.get("relevant_passages", [])
 
         # Format passages for WatsonX input
@@ -135,46 +149,42 @@ async def llm_watsonx_answer(hybrid_search_response: dict):
         # Invoke WatsonX for LLM response
         watsonx_response = inference_llm(llm_context, description)
         # Append results
-        llm_response.append(ResponseItem(
-            description=description,
-            relevant_passages=extracted_passages,
-            llm_answer=watsonx_response
-        ))
-        # llm_response.append({
-        #     "description": description,
-        #     "relevant_passages": extracted_passages,
-        #     "llm_answer": watsonx_response  
-        # })
-    return UploadResponse(collection_name=collection_name, response=llm_response)
-
-    # return {"collection_name": collection_name, "response": llm_response}
-
-
+        response_item = ResponseItem(
+                test_control=test_control,
+                test_plan=test_plan,
+                resource_id=resource_id,
+                description=description,
+                relevant_passages=[Passage(**p) for p in extracted_passages],
+                llm_answer=LLMAnswer(**watsonx_response)
+            )
+        llm_response.append(response_item)
+    return UploadResponse(collection_name=collection_name, controls_data=llm_response)
     
 @app.post("/hybrid_search_by_collection/")
 async def hybrid_search_by_collection(collection_name: str,
     description_input: str = Form(..., description="Description JSON input")
 ):
-   
     try:
         description_dict = json.loads(description_input)
-        description_parsed = DescriptionInput.parse_obj(description_dict)
+        control_input = ControlInput.parse_obj(description_dict)
     except Exception as e:
         return {"error": "Invalid JSON provided in description_input", "detail": str(e)}
-    descriptions = [
-        field.value 
-        for row in description_parsed.rows 
-        for field in row.fields 
-        if field.name == "Description"
-    ]
-    print(descriptions)
-    response = []
-    for desc in descriptions:
-        search_results = hybrid_search(desc,collection_name)
-        extracted_passages = extract_passages(search_results) 
-        response.append({"description": desc, "relevant_passages": extracted_passages})
     
-    return {"collection_name":collection_name,"response": response}
+    response = []
+    for control in control_input.controls_data:
+        desc = control.description
+        search_results = hybrid_search(desc, collection_name)
+        extracted_passages = extract_passages(search_results)
+
+        response.append({
+            "test_control": control.test_control,
+            "test_plan": control.test_plan,
+            "resource_id": control.resource_id,
+            "description": desc,
+            "relevant_passages": extracted_passages
+        })
+
+    return { "collection_name": collection_name,"controls_data": response}
 
 
 @app.post("/drop_collection/")
