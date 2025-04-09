@@ -72,7 +72,7 @@ def inference_llm(context_passages,question):
     ### **Expected JSON Output Format:**  
     ```json
     {{
-    "Compliance Status": "<Determined | Not Determined>",
+    "Compliance_Status": "<Determined | Not Determined>",
     "llm_final_answer": "<Summarized compliance assessment>",
     "explanation": "<Detailed explanation of findings>",
     "source": "<Exact document name or section or title used to arrive llm final answer>",
