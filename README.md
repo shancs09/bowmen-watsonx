@@ -2,51 +2,7 @@
 
 This project implements a **Hybrid Search RAG (Retrieval-Augmented Generation)** solution using **FastAPI**, **Milvus**, and **WatsonX**. It supports **BM25 and dense vector search**, integrates with **WatsonX for LLM processing**, and dynamically manages **Milvus collections per user session**.
 
-                        ┌─────────────────────────────┐
-                        │         End User            │
-                        │  (via Swagger or API call)  │
-                        └────────────┬────────────────┘
-                                     │
-                          [1] Upload PDF / Query
-                                     │
-                             ┌───────▼────────┐
-                             │    FastAPI     │  ◄──────────────┐
-                             │  (Code Engine) │                 │
-                             └───────┬────────┘                 │
-                                     │                          │
-          ┌──────────────────────────▼────────────────────────┐ │
-          │               Text Chunking &                     │ │
-          │     Embedding Generation (SentenceTransformer /   │ │
-          │     WatsonX Embeddings SDK based on mode)         │ │
-          └────────────────┬──────────────────────────────────┘ │
-                           │                                    │
-           [2a] BM25       │        [2b] Dense Embeddings       │
-     Keyword Matching      │        (WatsonX or SBERT)          │
-                           │                                    │
-                   ┌───────▼────────┐               ┌────────── ▼─────────┐
-                   │   BM25 Index   │               │   Milvus Vector DB  │
-                   │ (In-Memory)    │               │ (Cloud VM-hosted)   │
-                   └───────────────┬┘               └─────────────────────┘
-                                   │                              
-                           [3] Hybrid Search & RRF Ranking       
-                                   │                              
-                            ┌──────▼───────┐
-                            │   Top-k Passages                    
-                            └──────┬───────┘
-                                   │
-                            [4] Prompt Construction
-                                   │
-                      ┌────────────▼─────────────┐
-                      │    IBM WatsonX LLM API   │
-                      │     (Text Generation)    │
-                      └────────────┬─────────────┘
-                                   │
-                             [5] Final Response
-                                   │
-                       ┌───────────▼────────────┐
-                       │  Hybrid Search Output  │
-                       │  + LLM Generated Answer│
-                       └────────────────────────┘
+![mermaid-diagram-2025-04-09-135224](https://github.com/user-attachments/assets/eb354ec7-ba5b-4da8-b93a-7544425eee32)
 
 ---
 
