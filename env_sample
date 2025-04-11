@@ -1,0 +1,10 @@
+MILVUS_HOST=159.8.184.156
+MILVUS_PORT=19530
+MILVUS_USERNAME=root
+MILVUS_PASSWORD=M*****
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+wx_api_key=D*****GQIieDxzTXHRc_X
+wx_service_url=https://eu-gb.ml.cloud.ibm.com
+wx_project_id=df43e******dd600b8b89
+wx_llm_model_id=mistralai/mixtral-8x7b-instruct-v01
+wx_embedding_model=sentence-transformers/all-minilm-l6-v2
