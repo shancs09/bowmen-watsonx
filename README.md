@@ -64,7 +64,7 @@ The FastAPI app can be containerized and deployed to IBM Cloud Code Engine:
 - ✅ Deploy as a Code Engine app using the container image
 - ✅ Ensure Milvus (running on IBM Cloud VM) is publicly reachable
 
-Live Endpoint: [https://bw-wx-hybrid-search.1tyxjp422ztp.eu-gb.codeengine.appdomain.cloud/docs](https://bw-wx-hybrid-search.1tyxjp422ztp.eu-gb.codeengine.appdomain.cloud/docs)
+Live Endpoint: [https://bw-wx-hybrid-search-v2.1tyxjp422ztp.eu-gb.codeengine.appdomain.cloud/docs](https://bw-wx-hybrid-search.1tyxjp422ztp.eu-gb.codeengine.appdomain.cloud/docs)
 
 ---
 
