@@ -1,0 +1,149 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "CT Update Test Results in OP",
+    "description": "CT Update Test Results in OP",
+    "version": "1.0",
+    "x-ibm-application-name": "CT Update Test Results in OP",
+    "x-ibm-application-id": "ct-update-test-results-in-op",
+    "x-ibm-annotations": "true",
+    "x-ibm-skill-type": "imported"
+  },
+  "servers": [
+    {
+      "url": "https://update-openpages.1t45ngs2udpm.us-east.codeengine.appdomain.cloud"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/update": {
+      "post": {
+        "parameters": [
+          {
+            "required": true,
+            "name": "callbackUrl",
+            "in": "header",
+            "description": "The URL to send the result of the operation to",
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "x-ibm-order": 1,
+            "x-ibm-multiline": "false"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Simple success or failure message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test_results": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "test_result": {
+                          "type": "string"
+                        },
+                        "resource_id": {
+                          "type": "string"
+                        },
+                        "test_plan": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "test_result",
+                        "resource_id",
+                        "test_plan"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "test_results"
+                ]
+              }
+            }
+          }
+        },
+        "callbacks": {
+          "postResponse": {
+            "{$request.header.callbackUrl}": {
+              "post": {
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/async_response"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "202": {
+                    "description": "Output received successfully."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "CT - Update test results in OP",
+        "description": "Takes a list of test result objects and submits them to the OpenPages backend."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      }
+    },
+    "schemas": {
+      "Output": {
+        "title": "Output",
+        "type": "object",
+        "properties": {
+          "update_result": {
+            "title": "update_result",
+            "type": "string"
+          }
+        }
+      },
+      "async_response": {
+        "title": "async_response",
+        "type": "object",
+        "properties": {
+          "output": {
+            "$ref": "#/components/schemas/Output"
+          },
+          "runtimeException": {
+            "$ref": "#/components/schemas/Output"
+          }
+        }
+      }
+    }
+  }
+}

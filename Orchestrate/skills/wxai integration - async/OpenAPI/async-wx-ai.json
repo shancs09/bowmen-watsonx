@@ -1,0 +1,239 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "CT wxai integration",
+    "description": "CT wxai integration",
+    "version": "1.0",
+    "x-ibm-application-name": "CT wxai integration",
+    "x-ibm-application-id": "ct-wxai-integration",
+    "x-ibm-annotations": "true",
+    "x-ibm-skill-type": "imported"
+  },
+  "servers": [
+    {
+      "url": "https://async-wx-ai.1t45ngs2udpm.us-east.codeengine.appdomain.cloud"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/upload": {
+      "post": {
+        "parameters": [
+          {
+            "required": true,
+            "name": "callbackUrl",
+            "in": "header",
+            "description": "The URL to send the result of the operation to",
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "x-ibm-order": 1,
+            "x-ibm-multiline": "false"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "watsonx async response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/FileObject"
+                    }
+                  },
+                  "controls_data": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ControlData"
+                    }
+                  }
+                },
+                "required": [
+                  "files",
+                  "controls_data"
+                ]
+              }
+            }
+          }
+        },
+        "callbacks": {
+          "postResponse": {
+            "{$request.header.callbackUrl}": {
+              "post": {
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/async_response"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "202": {
+                    "description": "Output received successfully."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "CT wxai integration",
+        "summary": "CT wxai integration",
+        "operationId": "ct-wxai-integration-opid"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      }
+    },
+    "schemas": {
+      "FileObject": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "ControlData": {
+        "type": "object",
+        "properties": {
+          "test_control": {
+            "type": "string"
+          },
+          "test_plan": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "resource_id": {
+            "type": "string"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "title": "SuccessResponse",
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "Output": {
+        "title": "Output",
+        "type": "object",
+        "properties": {
+          "string1": {
+            "title": "String1",
+            "type": "string"
+          }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        }
+      },
+      "async_response": {
+        "title": "async_response",
+        "type": "object",
+        "properties": {
+          "output": {
+            "$ref": "#/components/schemas/Output"
+          },
+          "runtimeException": {
+            "$ref": "#/components/schemas/Output"
+          }
+        }
+      }
+    }
+  }
+}

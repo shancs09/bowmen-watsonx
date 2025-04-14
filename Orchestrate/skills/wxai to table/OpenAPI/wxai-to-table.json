@@ -1,0 +1,127 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "BG Test results table",
+    "description": "BG Test results table",
+    "version": "1.0",
+    "x-ibm-application-name": "BG Test results table",
+    "x-ibm-application-id": "bg-test-results-table",
+    "x-ibm-annotations": "true",
+    "x-ibm-skill-type": "imported"
+  },
+  "servers": [
+    {
+      "url": "https://wxai-to-table.1t45ngs2udpm.us-east.codeengine.appdomain.cloud"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/process": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "A JSON array of test control data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "object",
+                      "properties": {
+                        "hwtable": {
+                          "type": "array",
+                          "title": "Test results",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "test_control": {
+                                "type": "string",
+                                "description": "test_control"
+                              },
+                              "test_plan": {
+                                "type": "string",
+                                "description": "test_plan"
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "description"
+                              },
+                              "test_result": {
+                                "type": "string",
+                                "description": "test_result"
+                              },
+                              "passage_reference": {
+                                "type": "string",
+                                "description": "passage_reference"
+                              },
+                              "resource_id": {
+                                "type": "string",
+                                "description": "resource_id"
+                              },
+                              "confidence_score": {
+                                "type": "string",
+                                "description": "confidence_score"
+                              },
+                              "explanation": {
+                                "type": "string",
+                                "description": "explanation"
+                              },
+                              "gap_analysis": {
+                                "type": "string",
+                                "description": "gap_analysis"
+                              },
+                              "source": {
+                                "type": "string",
+                                "description": "source"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "output": {
+                    "type": "string",
+                    "example": "json in string format"
+                  }
+                },
+                "required": [
+                  "output"
+                ]
+              }
+            }
+          }
+        },
+        "description": "BG Test results table",
+        "summary": "BG Test results table",
+        "operationId": "bg-test-results-opid"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      }
+    }
+  }
+}
