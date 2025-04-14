@@ -2,7 +2,7 @@
 
 This project implements a **Hybrid Search RAG (Retrieval-Augmented Generation)** solution using **FastAPI**, **Milvus**, and **WatsonX**. It supports **BM25 and dense vector search**, integrates with **WatsonX for LLM processing**, and dynamically manages **Milvus collections per user session**.
 
-![mermaid-diagram-2025-04-09-135224](https://github.com/user-attachments/assets/eb354ec7-ba5b-4da8-b93a-7544425eee32)
+![image](https://github.com/user-attachments/assets/de6796ed-90e6-452b-8406-314b26d9130e)
 
 ---
 
