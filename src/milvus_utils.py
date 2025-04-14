@@ -1,9 +1,7 @@
-import os,numpy as np
-from pymilvus import MilvusClient, DataType, Function, FunctionType
-from pymilvus import AnnSearchRequest, RRFRanker
+import os,numpy as np,fitz,time
+from pymilvus import MilvusClient, DataType, Function, FunctionType,AnnSearchRequest, RRFRanker
 from src.watsonx_utils import wx_embeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import fitz
 
 # Load environment variables
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
@@ -16,7 +14,11 @@ MILVUS_PASSWORD = os.getenv('MILVUS_PASSWORD')
 # # Initialize embedding model
 # embedding_model = SentenceTransformer(EMBEDDING_MODEL)
 
-# Initialize Milvus client
+# # Initialize Milvus client
+# def get_milvus_client():
+#     token = f"{MILVUS_USERNAME}:{MILVUS_PASSWORD}"
+#     return MilvusClient(uri=f"http://{MILVUS_HOST}:{MILVUS_PORT}", token=token)
+
 token = f"{MILVUS_USERNAME}:{MILVUS_PASSWORD}"
 client = MilvusClient(
     uri=f"http://{MILVUS_HOST}:{MILVUS_PORT}",
@@ -65,38 +67,35 @@ def extract_text_from_pdf(pdf_content: bytes):
     return text
 
 
-def data_ingestion(pdf_content: bytes,collection_name: str,filename: str):
+async def data_ingestion(pdf_content: bytes,collection_name: str,filename: str):
+    # client = get_milvus_client()
     text = extract_text_from_pdf(pdf_content)
     if not text.strip():  # Handle empty PDFs gracefully
         print(f"Skipping ingestion: No text found in PDF for {collection_name}")
         return None
     chunks = chunk_text(text)
-    # Individual Row Insert
-    # embeddings = embedding_model.encode(chunks, convert_to_numpy=True).tolist()
-    
-    # insert_result = client.insert(collection_name, [
-    #     {'text': chunk, 'dense': vec} for chunk, vec in zip(chunks, embeddings)
-    # ])
     # Batch Mode
-    BATCH_SIZE = 100
+    BATCH_SIZE = 1000
 
     for i in range(0, len(chunks), BATCH_SIZE):
         batch_chunks = chunks[i:i+BATCH_SIZE]
-        # batch_embeddings = embedding_model.encode(batch_chunks, convert_to_numpy=True).tolist()
+        t0 = time.time()
+        
         # 1. Generate embeddings using Watsonx
         batch_embeddings = wx_embeddings.embed_documents(batch_chunks)
+        print(f"[EMBEDDING] {filename}: Batch {i//BATCH_SIZE + 1} took {time.time() - t0:.2f}s")
 
         # 2. Convert to numpy and then tolist() if needed for Milvus
         batch_embeddings = np.array(batch_embeddings).tolist()
-        
-        client.insert(collection_name, [
-            {'filename': filename, 'text': chunk, 'dense': vec} for chunk, vec in zip(batch_chunks, batch_embeddings)
-        ])
-    client.flush(collection_name) # Ensures Milvus commits the inserted data
+        records = [ {'filename': filename, 'text': chunk, 'dense': vec} for chunk, vec in zip(batch_chunks, batch_embeddings)]
+        client.insert(collection_name, records)
+
     print(f"DATA INGESTION COMPLETED for {filename} in {collection_name}")
+    # client.close()
     return None
 
 def hybrid_search(query: str, collection_name: str):
+    # client = get_milvus_client()
     # query_dense_vector = embedding_model.encode([query], convert_to_numpy=True).tolist()
     query_dense_vector = [wx_embeddings.embed_query(query)]
 
@@ -122,6 +121,7 @@ def hybrid_search(query: str, collection_name: str):
         ranker=ranker,
         limit=3
     )
+    # client.close()
     # close_client() # Close client after search to prevent too many open connections
     return results
 
@@ -139,14 +139,18 @@ def extract_passages(search_results):
     # return {"passages": [{"text": hit['entity']['text'], "distance": hit['distance']} for hit in search_results[0]]}
 
 def clean_data(collection_name: str):
+    # client = get_milvus_client()
     client.delete(collection_name=collection_name, filter="id > 0")
+    # client.close()
     print(f"All data from collection '{collection_name}' has been deleted.")
 
 def drop_collection(collection_name: str):
+    # client = get_milvus_client()
     client.drop_collection(collection_name)
+    # client.close()
     print(f"Collection '{collection_name}' has been dropped.")
 
-def close_client():
-    print("Closing Milvus client connection...")
-    client.close()
-    print("Milvus client connection closed.")
+# def close_client():
+#     print("Closing Milvus client connection...")
+#     client.close()
+#     print("Milvus client connection closed.")
