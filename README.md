@@ -36,6 +36,9 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 The API documentation will be available at:
 - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+  ![image](https://github.com/user-attachments/assets/3658cf84-18e5-4305-947a-d91d276a1dd5)
+
 - Redoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ---
