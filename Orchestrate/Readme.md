@@ -4,13 +4,14 @@ This Readme file guides you through setting up of watsonx Orchestrate skills and
 
 ## Skills
 The necessary OpenAPI specification file and also Code Engine code are available in the Orchestrate/Skills folder. They are arranged by the functionality.
-Orchestrate
-├── Skills
-    ├── Get Vendors
-    ├── Get Controls
-    ├── wxai integration - async
-    ├── wxai to table
-    └── Update OpenPages
+
+Orchestrate/
+├── Skills/
+├── Get Vendors/
+├── Get Controls/
+├── wxai integration - async/
+├── wxai to table/
+└── Update OpenPages/
 
 ## Get IBM Cloud API Key
 
