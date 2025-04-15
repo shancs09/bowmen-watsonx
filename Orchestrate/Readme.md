@@ -74,7 +74,7 @@ For each of the skills you need to add connections to the SkillSets `Personal sk
 
 Create skill flow as shown in the below image
 
-<img src="./images/skill-flow.jpg" alt="Skill flow" width="40%" />
+<img src="./images/skill-flow.jpg" alt="Skill flow" width="20%" />
 
 Map inputs from previous skill outputs as appropriate. Many of them are straight forward. One or two might need some help. Attaching screenshot, where helps is needed, below.
 
