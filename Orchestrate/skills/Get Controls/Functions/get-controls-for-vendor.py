@@ -34,11 +34,12 @@ def transform_json(input_json):
     
     for row in input_json.get("rows", []):  # Handle missing "rows" key
         row_dict = {}
+        # first name occurrance is control and second one is test.. Check flag to check if it is first name or second name
+        name_field = "control"
         for field in row.get("fields", []):  # Handle missing "fields" key
-            if field["name"] == "Name" and field["value"].startswith("SOC"):
-                row_dict["control"] = field["value"]
-            elif field["name"] == "Name" and field["value"].startswith("TP-SOC"):
-                row_dict["test_plan"] = field["value"]
+            if field["name"] == "Name":
+                row_dict[name_field] = field["value"]
+                name_field = "test_plan"
             elif field["name"] == "OPSS-Test:Test Procedure":
                 row_dict["test_procedure"] = field["value"]
             elif field["name"] == "Resource ID":
@@ -56,8 +57,9 @@ def main(params):
     if not token:
         return {"statusCode": 500, "body": {"Error": "Failed to get access token"}}
 
-    host = "bw-wx-hybrid-search.1tyxjp422ztp.eu-gb.codeengine.appdomain.cloud"
-    endpoint = "/upload"
+    host = "a67919ef-db35-4266-acc2-0d47bfe4aa06.eu-central-1.aws.openpages.ibm.com"
+    endpoint = "/opgrc/api/v2/query/"
+
 
     headers = {
         "Content-Type": "application/json",
