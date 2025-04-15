@@ -1,12 +1,16 @@
-# Work in progress
+#watsonx Orchestrate skills development for Control Testing Automation
 
 This Readme file guides you through setting up of watsonx Orchestrate skills and related IBM Cloud Code Engine applications and functions
 
-## Clone the repo to local
-Clone this GitHub repo to your local
-
 ## Skills
-The necessary OpenAPI specification file and also Code Engine code are available in the Orchestrate/Skills folder
+The necessary OpenAPI specification file and also Code Engine code are available in the Orchestrate/Skills folder. They are arranged by the functionality.
+- Orchestrate
+  - Skills
+    - Get Vendors
+    - Get Controls
+    - wxai integration - async
+    - wxai to table
+    - Update OpenPages
 
 ## Get IBM Cloud API Key
 
@@ -16,6 +20,8 @@ Refer to the [Managing user API keys](https://cloud.ibm.com/docs/account?topic=a
 
 ## Steps to deploy CE applications and functions
 
+Clone this GitHub repo to your local machine.
+
 You will find both Code Engine Applications as well as IBM Cloud function code. 
 
 Refer to [Deploying applications on Code Engine](https://cloud.ibm.com/docs/codeengine?topic=codeengine-deploy-app-tutorial) and [Working with Cloud functions](https://cloud.ibm.com/docs/codeengine?topic=codeengine-fun-work) if you need help to deploy following. Keep in mind that 
@@ -23,11 +29,20 @@ Refer to [Deploying applications on Code Engine](https://cloud.ibm.com/docs/code
 - You need to update API endpoints for OpenPages and watsonx.ai
 
 Applications/Functions
-- Orchestrate/Skills/Get Vendors/Functions/get-vendors-list.py
-- Orchestrate/Skills/Get Controls/Functions/get-controls-for-vendor.py
-- Orchestrate/Skills/wxai integration - async/CE Code
-- Orchestrate/Skills/wxai to table/CE Code
-- Orchestrate/Skills/Update OpenPages/CE Code
+- Orchestrate
+  - Skills
+    - Get Vendors
+      - Functions
+        - get-vendors-list.py
+    - Get Controls
+      - Functions
+        - get-controls-for-vendor.py
+    - wxai integration - async
+      - CE Code
+    - wxai to table
+      - CE Code
+    - Update OpenPages
+      - CE Code
 
 Verify that these application are running fine by calling their API endpoints. Make a note of the endpoints. These will be required to be used in OpenAPI specification files.
 
@@ -35,11 +50,23 @@ Verify that these application are running fine by calling their API endpoints. M
 
 You will need to create skills using each of the OpenAPI files listed below. If needed, refer to instructions provided in [Building skills by importing OpenAPI files](https://www.ibm.com/docs/en/watsonx/watson-orchestrate/current?topic=flows-building-skills-by-importing-openapi-files) 
 
-- Orchestrate/Skills/Get Vendors/OpenAPI/vendorlist-OpenAPI.json
-- Orchestrate/Skills/Get Controls/OpenAPI/get-controls-list.json
-- Orchestrate/Skills/wxai integration - async/OpenAPI/async-wx-ai.json
-- Orchestrate/Skills/wxai to table/OpenAPI/wxai-to-table.json
-- Orchestrate/Skills/Update OpenPages/OpenAPI/update-test-results-to-OP.json
+- Orchestrate
+  - Skills
+    - Get Vendors
+      - OpenAPI
+        - vendorlist-OpenAPI.json
+    - Get Controls
+      - OpenAPI
+        - get-controls-list.json
+    - wxai integration - async
+      - OpenAPI
+        - async-wx-ai.json
+    - wxai to table
+      - OpenAPI
+        - wxai-to-table.json
+    - Update OpenPages
+      - OpenAPI
+        - update-test-results-to-OP.json
 
 For each of the skills you need to add connections to the SkillSets `Personal skills` and `Orchestrate Agent skillset` and also to `AI agent configuration` -> `Apps and skills`
 
