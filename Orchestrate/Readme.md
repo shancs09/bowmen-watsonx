@@ -74,15 +74,15 @@ For each of the skills you need to add connections to the SkillSets `Personal sk
 
 Create skill flow as shown in the below image
 
-![Skill flow](./images/skill-flow.png "Skill flow")
+<img src="./images/skill-flow.png" alt="Skill flow" width="50%" />
 
 Map inputs from previous skill outputs as appropriate. Many of them are straight forward. One or two might need some help. Attaching screenshot, where helps is needed, below.
 
-![wxai mapping](./images/wxai-mapping.png "wxai mapping")
+<img src="./images/wxai-mapping.png" alt="wxai mapping" width="50%" />
 
 and 
 
-![Table Display](./images/table-display.png "Table Display")
+<img src="./images/table-display.png" alt="Table Display" width="50%" />
 
 Add the skill flow in wxO `AI agent configuration` -> `Apps and skills`. Provide a description that will help trigger the user utterances. e.g. `I want to test controls`.
 
