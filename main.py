@@ -95,60 +95,6 @@ def format_context(extracted_passages):
     )
     return formatted_text
 
-# @app.post("/upload/", response_model=UploadResponse)
-# async def upload_files(
-#     files: List[UploadFile] = File(..., description="Upload PDF files"),
-#     description_input: str = Form(..., description="Description JSON input"),
-#     auto_drop_collection_after_search: bool = Query(True, description="Drop collection after search")
-# ):
-#     collection_name = f"session_{uuid.uuid4().hex}"
-    
-#     #Data Ingestion
-#     file_contents = {}
-#     for file in files:
-#         content = await file.read()
-#         file_contents[file.filename] = content
-#     print("FILE CONTENT READ")
-
-#     # Ensure Milvus collection exists
-#     create_schema_collection(collection_name)
-
-#     for file_name, content in file_contents.items():
-#         data_ingestion(pdf_content=content,collection_name=collection_name,filename=file_name)
-#         print(f"Ingested {file_name} into collection {collection_name}")
-
-#     #Retrieval
-#     try:
-#         description_dict = json.loads(description_input)
-#         # descriptions = description_dict.get("descriptions", [])
-#         control_input = ControlInput.parse_obj(description_dict)
-#     except Exception as e:
-#         return {"error": "Invalid JSON provided in description_input", "detail": str(e)}
-#     print("DECRIPTION EXTRACTED:")
-#     response_data=[]
-#     for control in control_input.controls_data:
-#         desc = control.description
-#         search_results = hybrid_search(desc,collection_name)
-#         extracted_passages = extract_passages(search_results) 
-#         llm_context =format_context(extracted_passages)
-#         # Invoke Watsonx for LLM response using description & relevant passages
-#         watsonx_response = inference_llm(llm_context, desc)
-#         print(watsonx_response)
-#         # Build the structured response
-#         response_item = ResponseItem(
-#             test_control=control.test_control,
-#             test_plan=control.test_plan,
-#             resource_id=control.resource_id,
-#             description=desc,
-#             relevant_passages=[Passage(**p) for p in extracted_passages],
-#             llm_answer=LLMAnswer(**watsonx_response)
-#         )
-#         response_data.append(response_item)
-
-#     if auto_drop_collection_after_search:
-#         drop_collection(collection_name)
-#     return UploadResponse(collection_name=collection_name,controls_data=response_data)
-
 def process_control(control, collection_name):
     desc = control.description
     search_results = hybrid_search(desc, collection_name)
@@ -192,6 +138,7 @@ async def upload_files(
     await asyncio.gather(*tasks)
      # Flush once after all ingestion is done
     client.flush(collection_name)
+    client.create_index(collection_name=collection_name) 
 
     #Retrieval
     try:
@@ -213,53 +160,6 @@ async def upload_files(
     if auto_drop_collection_after_search:
         drop_collection(collection_name)
     return UploadResponse(collection_name=collection_name,controls_data=response_data)
-
-# @app.post("/create_collection/")
-# async def create_collection(
-#     files: List[UploadFile] = File(..., description="Upload PDF files")
-# ):
-#     collection_name = f"session_{uuid.uuid4().hex}"
-    
-#     # Ensure Milvus collection exists
-#     create_schema_collection(collection_name)
-
-#     #Data Ingestion
-#     file_contents = {}
-#     for file in files:
-#         content = await file.read()
-#         file_contents[file.filename] = content
-#     print("FILE CONTENT READ")
-
-#     # for file_name, content in file_contents.items():
-#     #     data_ingestion(pdf_content=content,collection_name=collection_name,filename=file_name)
-#     #     print(f"Ingested {file_name} into collection {collection_name}")
-#     # # Ingest in parallel using process pool
-#     # loop = asyncio.get_running_loop()
-#     # tasks = []
-#     # with ProcessPoolExecutor() as executor:
-#     #     for file_name, content in file_contents.items():
-#     #         tasks.append(loop.run_in_executor(
-#     #             executor,
-#     #             data_ingestion,
-#     #             content,
-#     #             collection_name,
-#     #             file_name
-#     #         ))
-#     #     await asyncio.gather(*tasks)
-#     loop = asyncio.get_running_loop()
-#     tasks = []
-#     with ThreadPoolExecutor() as executor:
-#         for file_name, content in file_contents.items():
-#             tasks.append(loop.run_in_executor(
-#                 executor,
-#                 data_ingestion,
-#                 content,
-#                 collection_name,
-#                 file_name
-#             ))
-#         await asyncio.gather(*tasks)
-
-#     return {"collection_name":{collection_name},"response":"Data Ingestion sucessfull"}
 
 @app.post("/create_collection/")
 async def create_collection(
@@ -283,37 +183,6 @@ async def create_collection(
      # Flush once after all ingestion is done
     client.flush(collection_name)
     return {"collection_name": collection_name, "response": "Data Ingestion successful"}
-
-
-# @app.post("/llm_watsonx_answer/", response_model=UploadResponse)
-# async def llm_watsonx_answer(hybrid_search_response: dict):
-
-#     collection_name = hybrid_search_response.get("collection_name")
-#     responses = hybrid_search_response.get("controls_data", [])
-    
-#     llm_response = []
-#     for resp in responses:
-#         description = resp.get("description", "")
-#         test_control = resp.get("test_control", "")
-#         test_plan = resp.get("test_plan", "")
-#         resource_id = resp.get("resource_id", None)  # Optional, only if used
-#         extracted_passages = resp.get("relevant_passages", [])
-
-#         # Format passages for WatsonX input
-#         llm_context = format_context(extracted_passages)
-#         # Invoke WatsonX for LLM response
-#         watsonx_response = inference_llm(llm_context, description)
-#         # Append results
-#         response_item = ResponseItem(
-#                 test_control=test_control,
-#                 test_plan=test_plan,
-#                 resource_id=resource_id,
-#                 description=description,
-#                 relevant_passages=[Passage(**p) for p in extracted_passages],
-#                 llm_answer=LLMAnswer(**watsonx_response)
-#             )
-#         llm_response.append(response_item)
-#     return UploadResponse(collection_name=collection_name, controls_data=llm_response)
 
 @app.post("/llm_watsonx_answer/", response_model=UploadResponse)
 async def llm_watsonx_answer(hybrid_search_response: dict):
@@ -383,33 +252,6 @@ async def hybrid_search_by_collection(
         response = await asyncio.gather(*tasks)
 
     return { "collection_name": collection_name, "controls_data": response }
-
-# @app.post("/hybrid_search_by_collection/")
-# async def hybrid_search_by_collection(collection_name: str,
-#     description_input: str = Form(..., description="Description JSON input")
-# ):
-#     try:
-#         description_dict = json.loads(description_input)
-#         control_input = ControlInput.parse_obj(description_dict)
-#     except Exception as e:
-#         return {"error": "Invalid JSON provided in description_input", "detail": str(e)}
-    
-#     response = []
-#     for control in control_input.controls_data:
-#         desc = control.description
-#         search_results = hybrid_search(desc, collection_name)
-#         extracted_passages = extract_passages(search_results)
-
-#         response.append({
-#             "test_control": control.test_control,
-#             "test_plan": control.test_plan,
-#             "resource_id": control.resource_id,
-#             "description": desc,
-#             "relevant_passages": extracted_passages
-#         })
-
-#     return { "collection_name": collection_name,"controls_data": response}
-
 
 @app.post("/drop_collection/")
 async def drop_collection_by_name(collection_name: str):
