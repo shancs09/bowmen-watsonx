@@ -26,7 +26,7 @@ You will find both Code Engine Applications as well as IBM Cloud function code.
 
 Refer to [Deploying applications on Code Engine](https://cloud.ibm.com/docs/codeengine?topic=codeengine-deploy-app-tutorial) and [Working with Cloud functions](https://cloud.ibm.com/docs/codeengine?topic=codeengine-fun-work) if you need help to deploy following. Keep in mind that 
 - You need to set API_KEY environment variable for all the functions and applications
-- You need to update API endpoints for OpenPages and watsonx.ai
+- You need to update API endpoints for OpenPages and watsonx.ai in the Applications and Functions code
 
 Applications/Functions
 - Orchestrate
@@ -44,7 +44,9 @@ Applications/Functions
     - Update OpenPages
       - CE Code
 
-Verify that these application are running fine by calling their API endpoints. Make a note of the endpoints. These will be required to be used in OpenAPI specification files.
+Deploy all the above Applications and Functions. Verify that these application are running fine by calling their API endpoints. Make a note of the endpoints. These will be required to be used in OpenAPI specification files.
+
+Note: watsonx.ai API calls take more than 30 seconds many a times. Due to this, there is timeout on watsonx Orchestrate side. To overcome this issue, skills are made async. So these endpoint behave in a asyncrounous way, meaning as soon as a request is received an immediate response is send that the request is received and parallelly the time consuming task is executed. When the time consuming task completes execution, the response is then send back to watsonx Orchestrate using a callback Url that watsonx Orchestrate sends to the API endpoint in the original request.
 
 ## Steps to deploy skills in wxO
 
@@ -69,6 +71,12 @@ You will need to create skills using each of the OpenAPI files listed below. If 
         - update-test-results-to-OP.json
 
 For each of the skills you need to add connections to the SkillSets `Personal skills` and `Orchestrate Agent skillset` and also to `AI agent configuration` -> `Apps and skills`
+
+Note: The following skills are async skills. 
+- wxai integration - async
+- update-test-results-to-OP.json
+
+Refer to https://www.ibm.com/docs/en/watsonx/watson-orchestrate/current?topic=skills-creating-openapi-specifications#optional-configuring-callback-for-asynchronous-skills to know more on making skills async
 
 ## Create skill flow
 
